@@ -2,7 +2,7 @@ function generateThumbnail() {
     var thecanvas = document.getElementById('thecanvas')
     //generate thumbnail URL data
     var context = thecanvas.getContext('2d');
-    context.drawImage(video, 0, 0, 440, 300);
+    context.drawImage(videoElement, 0, 0, 440, 300);
     // var dataURL = thecanvas.toDataURL();
 
     // //create img
@@ -31,11 +31,13 @@ function getPose() {
     return pose;
   }).then(function(pose){
     var par = document.getElementById('stats')
-    par.innerHTML = JSON.stringify(pose['keypoints'])
-  })
+    par.innerHTML = JSON.stringify(pose)
+    // console.log(typeof pose.keypoints)
+    CURRENT_POSE = pose.keypoints
+  });
 }
 // global or parent scope of handlers
-var video = document.getElementById("videoElement");
+var videoElement = document.getElementById("videoElement");
+var CURRENT_POSE = None
 
-
-setInterval(function(){generateThumbnail(); getPose();}, 1000)
+setInterval(function(){generateThumbnail(); getPose(); detect_movement(CURRENT_POSE);}, 1000)
