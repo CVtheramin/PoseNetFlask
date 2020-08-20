@@ -1,7 +1,5 @@
 function generateThumbnail() {
-    var thecanvas = document.getElementById('thecanvas')
-    //generate thumbnail URL data
-    var context = thecanvas.getContext('2d');
+
     context.drawImage(videoElement, 0, 0, 440, 300);
     // var dataURL = thecanvas.toDataURL();
 
@@ -11,6 +9,26 @@ function generateThumbnail() {
 
     // hideThumbs()
 }
+
+
+function drawPoint(x, y, r){
+  context.beginPath();
+  context.arc(x, y, r, 0, 2 * Math.pi);
+  context.stroke();
+  context.fillStyle = '#FFFFFF';
+  context.fill();
+}
+
+function drawKeypoints(keypoints) {
+    for (let i = 0; i < keypoints.length; i++) {
+      const keypoint = keypoints[i];
+      console.log(keypoint);
+      const { y, x } = keypoint.position;
+      console.log(x)
+      drawPoint(y, x, 3);
+    }
+    return keypoints
+  }
 
 
 function hideThumbs() {
@@ -23,7 +41,7 @@ function getPose() {
 
   var imageElement = document.getElementById('thecanvas');
 
-  posenet.load().then(function(net) {
+  return posenet.load().then(function(net) {
     const pose = net.estimateSinglePose(imageElement, {
       flipHorizontal: true,
       decodingMethod: "single-person"
@@ -31,13 +49,20 @@ function getPose() {
     return pose;
   }).then(function(pose){
     var par = document.getElementById('stats')
-    par.innerHTML = JSON.stringify(pose)
-    // console.log(typeof pose.keypoints)
-    CURRENT_POSE = pose.keypoints
-  });
+    // par.innerHTML = JSON.stringify(pose)
+    currentPose=pose.keypoints
+    return pose.keypoints
+  }).then(drawKeypoints)
 }
 // global or parent scope of handlers
-var videoElement = document.getElementById("videoElement");
-var CURRENT_POSE = None
+const videoElement = document.getElementById("videoElement");
+const theCanvas = document.getElementById('thecanvas')
+const context = thecanvas.getContext('2d');
 
-setInterval(function(){generateThumbnail(); getPose(); detect_movement(CURRENT_POSE);}, 1000)
+function runPipeline(){
+  generateThumbnail();
+  getPose().then(detect_movement);
+};
+let currentPose;
+
+setInterval(runPipeline, 1000)

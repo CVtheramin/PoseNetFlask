@@ -22,19 +22,27 @@
  </head>
 
   <body>
-    <div id="container">
+    <!-- <div id="container">
 	     <video autoplay="true" id="videoElement"></video>
      </div>
      <canvas id='thecanvas' width='400' height="400" ></canvas>
      <div id="output">
-       <!-- <img alt="Thumbnail to process" id="thumb" hidden> -->
+       <img alt="Thumbnail to process" id="thumb" hidden>
        <p id="stats"> </p>
-     </div>
+     </div> -->
+     <video id="video" autoplay muted="true" position="relative" width="320" height="240"></video>
+
+     <p>
+
+       Theres some text in here
+
+     </p>
+     <canvas id="canvas" ></canvas>
 
   </body>
 
   <!-- the webcam control scrip -->
-  <script>
+  <!-- <script>
   var video = document.querySelector("#videoElement");
 
   if (navigator.mediaDevices.getUserMedia) {
@@ -46,7 +54,7 @@
         console.log("Something went wrong!");
       });
   }
-  </script>
-  <script src = "{{url_for('static', filename='JS/webCamParse.js')}}"></script>
+  </script> -->
+  <script src = "{{url_for('static', filename='JS/index.js')}}"></script>
   <script src = "{{url_for('static', filename='JS/detect_movement.js')}}"></script>
 </html>
