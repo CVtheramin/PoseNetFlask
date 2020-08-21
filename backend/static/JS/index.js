@@ -37,7 +37,7 @@
   function drawKeypoints(keypoints) {
     for (let i = 0; i < keypoints.length; i++) {
       const keypoint = keypoints[i];
-      console.log(`keypoint in drawkeypoints ${keypoint}`);
+      // console.log(`keypoint in drawkeypoints ${keypoint}`);
       const { y, x } = keypoint.position;
       drawPoint(y, x, 3);
     }
@@ -77,7 +77,7 @@
     posenet
       .load()
       .then(function (net) {
-        console.log("estimateMultiplePoses .... ");
+        //console.log("estimateMultiplePoses .... ");
         return net.estimatePoses(video, {
           decodingMethod: "single-person",
         });
@@ -92,10 +92,26 @@
         poses.forEach(({ score, keypoints }) => {
           if (score >= minConfidence) {
             drawKeypoints(keypoints);
-            drawSkeleton(keypoints);
+            //drawSkeleton(keypoints);
+            postPose(keypoints);
+            PASSED += 1;
+          } else {
+            FAILED += 1;
           }
         });
+        console.log(`passed:failed ${PASSED}:${FAILED}`);
       });
   };
 
 })();
+
+const POSTURL = '/detect_movement';
+let PASSED = 0;
+let FAILED = 0;
+
+function postPose(pose){
+  let xhr = new XMLHttpRequest();
+  xhr.open("POST", POSTURL, true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.send(JSON.stringify(pose));
+}
