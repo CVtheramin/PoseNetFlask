@@ -93,7 +93,7 @@
           if (score >= minConfidence) {
             drawKeypoints(keypoints);
             //drawSkeleton(keypoints);
-            postPose(keypoints);
+            postPose(keypoints)
             PASSED += 1;
           } else {
             FAILED += 1;
@@ -105,13 +105,13 @@
 
 })();
 
-const POSTURL = '/detect_movement';
+const LOGURL = '/log_pose';
 let PASSED = 0;
 let FAILED = 0;
 
 function postPose(pose){
   let xhr = new XMLHttpRequest();
-  xhr.open("POST", POSTURL, true);
+  xhr.open("POST", LOGURL, true);
   xhr.setRequestHeader('Content-Type', 'application/json');
   xhr.send(JSON.stringify(pose));
 }
