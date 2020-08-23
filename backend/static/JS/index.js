@@ -133,9 +133,7 @@ START_BUTTON.addEventListener('click', function(){
 }, false)
 
 END_BUTTON.addEventListener('click', function(){
-  console.log(`stop clicked ${running}`);
   if (running) {
-    console.log('attempting to stop');
     payload = {"Audio": "Placeholder"};
     postRequest(payload, '/stop');
     running = false;
