@@ -24,9 +24,13 @@ def create_app():
         global POSE_RECORD
         global AUDIO_SAMPLE
         global FRAME_NUMBER
+        global MOVEMENT_THRESHOLD
         POSE_RECORD = np.empty([17, 2, 3600])
         AUDIO_SAMPLE = None
         FRAME_NUMBER = 0
+        data = request.get_json()
+        MOVEMENT_THRESHOLD = data['MOVEMENT_THRESHOLD']
+
 
     @app.route("/log_pose", methods=['POST'])
     def log_pose():
