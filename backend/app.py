@@ -29,8 +29,9 @@ def create_app():
         AUDIO_SAMPLE = None
         FRAME_NUMBER = 0
         data = request.get_json()
-        MOVEMENT_THRESHOLD = data['MOVEMENT_THRESHOLD']
-
+        MOVEMENT_THRESHOLD = float(data['MOVEMENT_THRESHOLD'])
+        print(f'Starting Log with threshold: {MOVEMENT_THRESHOLD}')
+        return 'success!'
 
     @app.route("/log_pose", methods=['POST'])
     def log_pose():
@@ -40,9 +41,14 @@ def create_app():
         for part_index, point in enumerate(pose):
             POSE_RECORD[part_index][0][FRAME_NUMBER] = point['position']['x']
             POSE_RECORD[part_index][1][FRAME_NUMBER] = point['position']['y']
+        print(f'{FRAME_NUMBER} logged')
         FRAME_NUMBER += 1
         return 'success!'
 
-
+    @app.route('/stop', methods=['POST'])
+    def stop():
+        np.save('poses', POSE_RECORD)
+        print('Saved to poses.npy')
+        return 'success'
 
     return app

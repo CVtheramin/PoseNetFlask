@@ -38,12 +38,13 @@
      </p>
      <canvas id="canvas" ></canvas>
 
-     <form action='/start' method="post">
+
        <div class="slidecontainer">
         <input type="range" min="0" max="3" value="1" class="slider" id="MOVEMENT_THRESHOLD" step=.2>
       </div>
-      <input type="submit" Value="start">
-    </form>
+      <button id="startButton" type="button"> Start </button>
+      <button id="stopButton" type="button"> Stop </button>
+
      <p id='stats'></p>
   </body>
 

@@ -93,7 +93,9 @@
           if (score >= minConfidence) {
             drawKeypoints(keypoints);
             //drawSkeleton(keypoints);
-            postPose(keypoints)
+            if (running) {
+              postRequest(keypoints, LOGURL);
+            }
             PASSED += 1;
           } else {
             FAILED += 1;
@@ -108,10 +110,34 @@
 const LOGURL = '/log_pose';
 let PASSED = 0;
 let FAILED = 0;
+let running = false;
 
-function postPose(pose){
+function postRequest(pose, url){
   let xhr = new XMLHttpRequest();
-  xhr.open("POST", LOGURL, true);
+  xhr.open("POST", url, true);
   xhr.setRequestHeader('Content-Type', 'application/json');
   xhr.send(JSON.stringify(pose));
 }
+
+const START_BUTTON = document.getElementById('startButton');
+const MOVEMENT_THRESHOLD = document.getElementById('MOVEMENT_THRESHOLD');
+const END_BUTTON = document.getElementById('stopButton')
+
+
+START_BUTTON.addEventListener('click', function(){
+  if (!running) {
+    payload = {"MOVEMENT_THRESHOLD": MOVEMENT_THRESHOLD.value};
+    postRequest(payload, '/start');
+    running = true;
+  }
+}, false)
+
+END_BUTTON.addEventListener('click', function(){
+  console.log(`stop clicked ${running}`);
+  if (running) {
+    console.log('attempting to stop');
+    payload = {"Audio": "Placeholder"};
+    postRequest(payload, '/stop');
+    running = false;
+  }
+}, false)
