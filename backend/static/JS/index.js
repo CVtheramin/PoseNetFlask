@@ -1,22 +1,17 @@
 (() => {
   'use strict';
-  const TWILIO_DOMAIN = location.host;
-  const ROOM_NAME = 'tf';
-  // const Video = Twilio.Video;
-  let videoRoom, localStream;
   const video = document.getElementById("video");
   const canvas = document.getElementById("canvas");
   const ctx = canvas.getContext("2d");
   const minConfidence = 0.6;
   const VIDEO_WIDTH = 320;
   const VIDEO_HEIGHT = 240;
-  const frameRate = 20;
+  const frameRate = FRAME_RATE;
 
   // preview screen
   navigator.mediaDevices.getUserMedia({ video: true, audio: true })
     .then(vid => {
       video.srcObject = vid;
-      localStream = vid;
       const intervalID = setInterval(async () => {
         try {
           estimateMultiplePoses();
@@ -42,43 +37,14 @@
       drawPoint(y, x, 3);
     }
   }
-  function drawSegment(
-    pair1,
-    pair2,
-    color,
-    scale
-  ) {
-    ctx.beginPath();
-    ctx.moveTo(pair1.x * scale, pair1.y * scale);
-    ctx.lineTo(pair2.x * scale, pair2.y * scale);
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = color;
-    ctx.stroke();
-  }
-
-  function drawSkeleton(keypoints) {
-    const color = "#FFFFFF";
-    const adjacentKeyPoints = posenet.getAdjacentKeyPoints(
-      keypoints,
-      minConfidence
-    );
-
-    adjacentKeyPoints.forEach((keypoint) => {
-      drawSegment(
-        keypoint[0].position,
-        keypoint[1].position,
-        color,
-        1,
-      );
-    });
-  }
 
   const estimateMultiplePoses = () => {
+    console.log('estimating pose')
     posenet
       .load()
       .then(function (net) {
         //console.log("estimateMultiplePoses .... ");
-        return net.estimatePoses(video, {
+        return net.estimateSinglePose(video, {
           decodingMethod: "single-person",
         });
       })
@@ -89,23 +55,23 @@
         ctx.save();
         ctx.drawImage(video, 0, 0, VIDEO_WIDTH, VIDEO_HEIGHT);
         ctx.restore();
-        poses.forEach(({ score, keypoints }) => {
-          if (score >= minConfidence) {
-            drawKeypoints(keypoints);
+        console.log('starting to draw pose')
+        if (poses['score'] >= minConfidence) {
+            drawKeypoints(poses['keypoints']);
             //drawSkeleton(keypoints);
             if (running) {
-              postRequest(keypoints, LOGURL);
+              postRequest(poses['keypoints'], '/log_pose');
             }
             PASSED += 1;
           } else {
             FAILED += 1;
           }
-        });
         console.log(`passed:failed ${PASSED}:${FAILED}`);
       });
   };
 
 })();
+
 
 const LOGURL = '/log_pose';
 let PASSED = 0;
@@ -126,7 +92,9 @@ const END_BUTTON = document.getElementById('stopButton')
 
 START_BUTTON.addEventListener('click', function(){
   if (!running) {
-    payload = {"MOVEMENT_THRESHOLD": MOVEMENT_THRESHOLD.value};
+    payload = {"MOVEMENT_THRESHOLD": MOVEMENT_THRESHOLD.value,
+               "FRAME_RATE": FRAME_RATE,
+               "SONG_TIME": SONG_TIME};
     postRequest(payload, '/start');
     running = true;
   }

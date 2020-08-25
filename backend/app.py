@@ -25,11 +25,16 @@ def create_app():
         global AUDIO_SAMPLE
         global FRAME_NUMBER
         global MOVEMENT_THRESHOLD
+        global FRAME_RATE
+        global SONG_TIME
         POSE_RECORD = np.empty([17, 2, 3600])
         AUDIO_SAMPLE = None
         FRAME_NUMBER = 0
         data = request.get_json()
+        print(data)
         MOVEMENT_THRESHOLD = float(data['MOVEMENT_THRESHOLD'])
+        FRAME_RATE = int(data['FRAME_RATE'])
+        SONG_TIME = int(data['SONG_TIME'])
         print(f'Starting Log with threshold: {MOVEMENT_THRESHOLD}')
         return 'success!'
 
@@ -38,10 +43,13 @@ def create_app():
         global FRAME_NUMBER
         print('started detect_movement')
         pose = request.get_json()
+        pose_map = {}
         for part_index, point in enumerate(pose):
             POSE_RECORD[part_index][0][FRAME_NUMBER] = point['position']['x']
             POSE_RECORD[part_index][1][FRAME_NUMBER] = point['position']['y']
+            pose_map[part_index] = point['part']
         print(f'{FRAME_NUMBER} logged')
+        print(pose_map)
         FRAME_NUMBER += 1
         return 'success!'
 
