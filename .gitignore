@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# no data should be uploaded
+*.csv
+*.npy
+*.zip
+motion_graphs/
