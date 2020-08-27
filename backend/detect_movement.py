@@ -1,5 +1,5 @@
 from numpy import array, NaN, subtract, matmul, square, sqrt, isnan, \
-    split, diff, where, argwhere, reshape
+    split, diff, where, argwhere, reshape, negative, absolute
 from scipy.spatial import distance_matrix
 """
 POSE_RECORD is PART x POINT x FRAME
@@ -33,54 +33,31 @@ def detect_motions(pose_record, movement_threshold):
     motions = {}  # part: [(start_index, end_index, distance)]
     for part_index, part in enumerate(pose_record):
         # itterates through the parts
-        dist, nan_index = get_distances(part, movement_threshold)
+        dists = get_distances(part, movement_threshold)
+        clusters = get_part_clusters(dists)
         # find the individual motions
-        motions[PART_MAP[part_index]] = get_part_motion(dist, nan_index)
+        motions[PART_MAP[part_index]] = convert_clusters(dists, clusters[0]) \
+            + convert_clusters(dists, clusters[1])
+        motions[PART_MAP[part_index]].sort(key=lambda x: x[0])
     return motions
 
 
-def get_part_motion(dists, nans):
-    """
-    Returns a list of tuples that describe motions of the part in the form
-    (start_time, end_time, distance) where the times are frame indexes and distance
-    is the total amount of distance that the part moved
-
-    inputs:
-    -------
-    dists: array of distances with NaN values for minimum thresholds
-    nans: an array of the indexes of the NaNs are
-    """
-    nan_clusters = get_nan_clusters(nans)
-    moves = []
-    if nan_clusters[0][0][0] != 0:
-        move = (0, nan_clusters[0][0][0]-1, sum(dists[0:nan_clusters[0][0][0]]))
-        moves.append(move)
-
-    for i in range(len(nan_clusters)-1):
-        move_start = nan_clusters[i][1][0] + 1
-        move_end = nan_clusters[i + 1][0][0]
-        move_dist = sum(dists[move_start:move_end])
-        moves.append((move_start, move_end, move_dist))
-
-    if nan_clusters[-1][-1][0] != dists.shape[0]-1:
-        move = (nan_clusters[-1][-1][0], dists.shape[0]-1,
-                sum(dists[nan_clusters[-1][-1][0]: -1]))
-        moves.append(move)
-
-    return moves
+def get_part_clusters(dists):
+    pos = where(dists > 0)
+    neg = where(dists < 0)
+    pos_clusters = split(pos[0], where(diff(pos[0]) != 1)[0]+1)
+    neg_clusters = split(neg[0], where(diff(neg[0]) != 1)[0]+1)
+    return pos_clusters, neg_clusters
 
 
-def get_nan_clusters(nans):
-    """
-    Returns start and end indexes for all continuous blocks in the array NaNs
-
-    inputs:
-    -------
-    nans: an array of indexes where nans occur in a distance array
-    """
-    clustered_data = split(nans, where(diff(reshape(nans, nans.shape[0])) != 1)[0]+1)
-    clusters = [(cluster[0], cluster[-1]) for cluster in clustered_data]
-    return clusters
+def convert_clusters(dists, clusters):
+    motions = []
+    for cluster in clusters:
+        start = cluster[0]
+        end = cluster[-1] + 1
+        distance = absolute(sum(dists[start: end]))
+        motions.append((start, end, distance))
+    return motions
 
 
 def get_distances(part, threshold):
@@ -98,10 +75,8 @@ def get_distances(part, threshold):
     # get distances between points
     dists = euclidian_dist(part, shift)
     # replace distances below threshold with NaN
-    dists[dists < threshold] = NaN
-    # get NaN indexes
-    nan_index = argwhere(isnan(dists))
-    return dists, nan_index
+    dists[absolute(dists) < threshold] = NaN
+    return dists
 
 
 def euclidian_dist(A, B):
@@ -116,5 +91,8 @@ def euclidian_dist(A, B):
     """
     C = subtract(B, A)
     C_2 = square(C)
+    C_2_neg = where(C < 0, negative(C_2), C_2)
     dist_2 = matmul(C_2.T, array([1, 1]))
-    return sqrt(dist_2)
+    dist_2_neg = matmul(C_2_neg.T, array([1, 1]))
+    dist = sqrt(dist_2)
+    return where(dist_2_neg < 0, negative(dist), dist)

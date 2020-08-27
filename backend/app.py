@@ -43,9 +43,12 @@ def create_app():
         pose = request.get_json()
         pose_map = {}
         for part_index, point in enumerate(pose):
-            POSE_RECORD[part_index][0][FRAME_NUMBER] = point['position']['x']
-            POSE_RECORD[part_index][1][FRAME_NUMBER] = point['position']['y']
-            pose_map[part_index] = point['part']
+            if point['score'] > MOVEMENT_THRESHOLD:
+                POSE_RECORD[part_index][0][FRAME_NUMBER] = point['position']['x']
+                POSE_RECORD[part_index][1][FRAME_NUMBER] = point['position']['y']
+            else:
+                POSE_RECORD[part_index][0][FRAME_NUMBER] = -1
+                POSE_RECORD[part_index][1][FRAME_NUMBER] = -1
         FRAME_NUMBER += 1
         return 'success!'
 
