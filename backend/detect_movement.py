@@ -32,15 +32,37 @@ def detect_motions(pose_record, movement_threshold):
     # log of all the motions
     motions = {}  # part: [(start_index, end_index, distance)]
     for part_index, part in enumerate(pose_record):
+        # preprocess part
+        processed_part = preprocess_part(part)
         # itterates through the parts
-        dists = get_distances(part, movement_threshold)
+        dists = get_distances(processed_part, movement_threshold)
         clusters = get_part_clusters(dists)
         # find the individual motions
         motions[PART_MAP[part_index]] = convert_clusters(dists, clusters[0]) \
             + convert_clusters(dists, clusters[1])
+        # sort so that the motions are in the right order
         motions[PART_MAP[part_index]].sort(key=lambda x: x[0])
     return motions
 
+def preprocess_part(part):
+    """The API processes information as it comes in and if the score of a part
+    is below the threshold it replaces the index with -1. These need to be
+    swapped out for the average of the coordinates on either side (if they
+    exist) if they don't exist replace with NaN """
+    missing = where(part[0] == -1)
+    miss_clusters = split(missing, where(diff(missing) != 1)[0]+1)
+    for miss in miss_clusters:
+        if len(miss) > 1:
+            part[0][miss] = NaN
+            part[1][miss] = NaN
+        elif len(miss) == 1:
+            left = miss[0] - 1
+            right = miss[0] + 1
+            x = (part[0][left] + part[0][right]) / 2
+            y = (part[1][left] + part[1][right]) / 2
+            part[0][miss] = x
+            part[1][miss] = y
+    return part
 
 def get_part_clusters(dists):
     pos = where(dists > 0)
@@ -53,10 +75,11 @@ def get_part_clusters(dists):
 def convert_clusters(dists, clusters):
     motions = []
     for cluster in clusters:
-        start = cluster[0]
-        end = cluster[-1] + 1
-        distance = absolute(sum(dists[start: end]))
-        motions.append((start, end, distance))
+        if len(cluster) > 0:
+            start = cluster[0]
+            end = cluster[-1] + 1
+            distance = absolute(sum(dists[start: end]))
+            motions.append((start, end, distance))
     return motions
 
 
