@@ -1,13 +1,18 @@
 from flask import Flask, render_template, request, url_for
 from werkzeug.utils import secure_filename
+import os
 
 
 def create_app():
     app = Flask(__name__)
-
+    path = os.path.abspath(os.path.dirname(__file__))
     def render_svg(name):
-        svg = file('static/svg/+'+name+'.svg').read()
-        return render_template('index.html',{'svg':svg})
+        fn = open(path+'/static/svg/'+name+'.svg',"r")
+        svg = fn.read()
+        fn.flush()
+        fn.close()
+        context = {'svg':svg}
+        return render_template('index.html',**context)
 
     @app.route('/')
     def index():
