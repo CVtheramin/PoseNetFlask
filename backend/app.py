@@ -1,5 +1,11 @@
-from flask import Flask, render_template, request, Response
+from flask import Flask, render_template, request, flash, redirect, \
+    url_for
 import numpy as np
+from werkzeug.utils import secure_filename
+from pydub import AudioSegment
+from pydub.utils import make_chunks
+import os
+
 
 # 17 parts, two coords, 3600 frames
 # assumes 20 frames per second
@@ -27,7 +33,7 @@ def create_app():
         global MOVEMENT_THRESHOLD
         global FRAME_RATE
         global SONG_TIME
-        POSE_RECORD = np.empty([17, 2, 3600])
+        POSE_RECORD = np.empty([17, 2, FRAME_RATE * SONG_TIME])
         AUDIO_SAMPLE = None
         FRAME_NUMBER = 0
         data = request.get_json()
@@ -58,5 +64,20 @@ def create_app():
         np.save('poses', POSE_RECORD)
         print('Saved to poses.npy')
         return 'success'
+
+    # the route for uploading the music
+    @app.route('/api/upload', methods=['POST', 'GET'])
+    def api_message():
+        if (request.method == 'POST'):
+            r = request.files["audio_data"]
+            r.save(secure_filename(r.filename) + ".wav")
+        audio = AudioSegment.from_file("blob.wav")  # Gets the name of a wav file in current directory
+        chunk_length = 1000  # of miliseconds in each file
+        chunks = make_chunks(audio, chunk_length)   # Splits file into separate chunks each with length chunkLength
+        for i, chunk in enumerate(chunks):
+            chunk_name = "chunk{0}.wav".format(i)
+            print("exporting", chunk_name)
+            chunk.export(chunk_name, format="wav")  # Exports to a wav file in the current path
+        return 'file uploaded successfully'
 
     return app
