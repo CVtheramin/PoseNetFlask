@@ -105,3 +105,4 @@ def create_app():
         return 'file uploaded successfully'
 
     return app
+
