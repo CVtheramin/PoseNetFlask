@@ -6,6 +6,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <!-- Load Posenet -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/posenet"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <style>
     #container {
     	margin: 0px auto;
@@ -42,27 +43,21 @@
        <div class="slidecontainer">
         <input type="range" min="0" max="3" value=".6" class="slider" id="MOVEMENT_THRESHOLD" step=.2>
       </div>
-      <button id="startButton" type="button"> Start </button>
+      <button id="startButton" type="button"> Start  </button>
       <button id="stopButton" type="button"> Stop </button>
 
      <p id='stats'></p>
+
+     <div>
+       <p> Audio Controls </p>
+       <button type="button" onclick="mediaRecorder.start(1000)">Start</button>
+       <button id = "stop" type="button" onclick="mediaRecorder.stop()">Stop</button>
+       <button id = "upload" type = "button"> Upload</button>
+     </div>
   </body>
 
-  <!-- the webcam control scrip -->
-  <!-- <script>
-  var video = document.querySelector("#videoElement");
-
-  if (navigator.mediaDevices.getUserMedia) {
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then(function (stream) {
-        video.srcObject = stream;
-      })
-      .catch(function (err0r) {
-        console.log("Something went wrong!");
-      });
-  }
-  </script> -->
   <script src = "{{url_for('static', filename='JS/globals.js')}}"></script>
   <script src = "{{url_for('static', filename='JS/index.js')}}"></script>
   <script src = "{{url_for('static', filename='JS/detect_movement.js')}}"></script>
+  <script src = "{{url_for('static', filename='JS/audio.js')}}"></script>
 </html>
