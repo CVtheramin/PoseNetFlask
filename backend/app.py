@@ -1,9 +1,10 @@
-from flask import Flask, render_template, request, flash, redirect, \
-    url_for
+from flask import Flask, render_template, request
 import numpy as np
 from werkzeug.utils import secure_filename
 from pydub import AudioSegment
 from pydub.utils import make_chunks
+from .detect_movement import detect_motions
+from .audio_generation import generate_remix
 import os
 
 
@@ -15,6 +16,7 @@ POSE_RECORD = np.empty([17, 2, FRAME_RATE*SONG_TIME]) # PART x POINT x FRAME
 AUDIO_SAMPLE = None
 FRAME_NUMBER = 0
 MOVEMENT_THRESHOLD = .5
+AUDIO_CHUNK_LENGTH = 1000
 
 def create_app():
     app = Flask(__name__)
@@ -61,6 +63,18 @@ def create_app():
 
     @app.route('/stop', methods=['POST'])
     def stop():
+        audio_data = request.files['audio_data']
+        chunk_length = AUDIO_CHUNK_LENGTH
+        chunks = make_chunks(audio_data, chunk_length)
+        chunk_index = np.random.randint(0, len(chunks), 17)
+        chunks = [chunks[i] for i in chunk_index] # get rid of the extra chunks
+        motions = detect_motions(POSE_RECORD, 1)
+        remix = generate_remix(motions, chunks)
+
+        # choose 17 random chunks
+        # assign those random chunks to parts
+        # use the parts to reassemble the chunks
+        # return the new audio
         np.save('poses', POSE_RECORD)
         print('Saved to poses.npy')
         return 'success'
