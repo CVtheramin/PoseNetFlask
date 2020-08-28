@@ -28,9 +28,8 @@
      <canvas id='thecanvas' width='400' height="400" ></canvas>
      <div id="output">
        <img alt="Thumbnail to process" id="thumb" hidden>
-       <p id="stats"> </p>
-     </div> -->
-     <video id="video" autoplay muted="true" position="relative" width="320" height="240"></video>
+         </div> -->
+     <video id="video" autoplay muted="true" position="relative" width="320" height="240" ></video>
 
      <p>
 
@@ -39,6 +38,14 @@
      </p>
      <canvas id="canvas" ></canvas>
 
+
+       <div class="slidecontainer">
+        <input type="range" min="0" max="3" value=".6" class="slider" id="MOVEMENT_THRESHOLD" step=.2>
+      </div>
+      <button id="startButton" type="button"> Start </button>
+      <button id="stopButton" type="button"> Stop </button>
+
+     <p id='stats'></p>
   </body>
 
   <!-- the webcam control scrip -->
@@ -55,6 +62,7 @@
       });
   }
   </script> -->
+  <script src = "{{url_for('static', filename='JS/globals.js')}}"></script>
   <script src = "{{url_for('static', filename='JS/index.js')}}"></script>
   <script src = "{{url_for('static', filename='JS/detect_movement.js')}}"></script>
 </html>
