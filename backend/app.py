@@ -19,18 +19,23 @@ MOVEMENT_THRESHOLD = .5
 def create_app():
     app = Flask(__name__)
     path = os.path.abspath(os.path.dirname(__file__))
-    def render_svg(name):
+
+    def render_svg(name,page="index.html"):
         fn = open(path+'/static/svg/'+name+'.svg',"r")
         svg = fn.read()
         fn.flush()
         fn.close()
         context = {'svg':svg}
-        return render_template('index.html',**context)
+        return render_template(page,**context)
 
 
     @app.route('/')
     def index():
         return render_svg('index')
+
+    @app.route('/practice/<svgname>')
+    def practice(svgname):
+        return render_svg(svgname,"practice.html")
 
     @app.route('/about')
     def about():
