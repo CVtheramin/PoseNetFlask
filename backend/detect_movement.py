@@ -30,7 +30,7 @@ def detect_motions(pose_record, movement_threshold):
     takes in the full pose_record from the flask app
     """
     # log of all the motions
-    motions = {}  # part: [(start_index, end_index, distance)]
+    motions = []  # part: [(start_index, end_index, distance)]
     for part_index, part in enumerate(pose_record):
         # preprocess part
         processed_part = preprocess_part(part)
@@ -38,10 +38,12 @@ def detect_motions(pose_record, movement_threshold):
         dists = get_distances(processed_part, movement_threshold)
         clusters = get_part_clusters(dists)
         # find the individual motions
-        motions[PART_MAP[part_index]] = convert_clusters(dists, clusters[0]) \
-            + convert_clusters(dists, clusters[1])
+        # motions[PART_MAP[part_index]] = convert_clusters(dists, clusters[0]) \
+        #     + convert_clusters(dists, clusters[1])
+        motions += convert_clusters(dists, clusters[0])
+        motions += convert_clusters(dists, clusters[1])
         # sort so that the motions are in the right order
-        motions[PART_MAP[part_index]].sort(key=lambda x: x[0])
+        motions.sort(key=lambda x: x[0])
     return motions
 
 def preprocess_part(part):
@@ -79,7 +81,7 @@ def convert_clusters(dists, clusters):
             start = cluster[0]
             end = cluster[-1] + 1
             distance = absolute(sum(dists[start: end]))
-            motions.append((start, end, distance))
+            motions.append((start, end, int(distance)))
     return motions
 
 
