@@ -5,3 +5,12 @@ Download FFmpeg on your system and add it to your path variable. Use an editor o
 
 ## Usage
 Uplaod a song of your choice on the first page while dancing to it. Then, once you're satisfied with both the song and your moves, upload it to the backend server, where it will get split into chunks and your body movements will be analyzed. Finally, access the remixed version of the song by simply clicking on the audio file and downloading it to your local computer.
+
+### App.py
+Our central application that hosts various webpages and does the processing of user input.
+
+### Static/JS files
+The front-end user interactivity modules that allow the user to upload both their music and their movements.
+
+### Templates
+The html files/front-end code that the user interacts with.
