@@ -1,20 +1,22 @@
-from flask import Flask, render_template, request, flash, redirect, \
-    url_for
+from flask import Flask, render_template, request, jsonify
 import numpy as np
 from werkzeug.utils import secure_filename
 from pydub import AudioSegment
 from pydub.utils import make_chunks
-import os
+from .detect_movement import detect_motions
+
 
 
 # 17 parts, two coords, 3600 frames
 # assumes 20 frames per second
 FRAME_RATE = 20
+FRAME_LENGTH = FRAME_RATE / 1000 # in miliseconds
 SONG_TIME = 180 # in seconds
 POSE_RECORD = np.empty([17, 2, FRAME_RATE*SONG_TIME]) # PART x POINT x FRAME
 AUDIO_SAMPLE = None
 FRAME_NUMBER = 0
 MOVEMENT_THRESHOLD = .5
+AUDIO_CHUNK_LENGTH = 1000
 
 def create_app():
     app = Flask(__name__)
@@ -33,6 +35,7 @@ def create_app():
         global MOVEMENT_THRESHOLD
         global FRAME_RATE
         global SONG_TIME
+        global FRAME_LENGTH
         POSE_RECORD = np.empty([17, 2, FRAME_RATE * SONG_TIME])
         AUDIO_SAMPLE = None
         FRAME_NUMBER = 0
@@ -40,6 +43,7 @@ def create_app():
         MOVEMENT_THRESHOLD = float(data['MOVEMENT_THRESHOLD'])
         FRAME_RATE = int(data['FRAME_RATE'])
         SONG_TIME = int(data['SONG_TIME'])
+        FRAME_LENGTH = FRAME_RATE / 1000
         print(f'Starting Log with threshold: {MOVEMENT_THRESHOLD}')
         return 'success!'
 
@@ -61,9 +65,10 @@ def create_app():
 
     @app.route('/stop', methods=['POST'])
     def stop():
-        np.save('poses', POSE_RECORD)
-        print('Saved to poses.npy')
-        return 'success'
+
+        motions = detect_motions(POSE_RECORD, 1)
+        print(motions)
+        return jsonify(motions)
 
     # the route for uploading the music
     @app.route('/api/upload', methods=['POST', 'GET'])

@@ -134,3 +134,5 @@ dmypy.json
 *.zip
 motion_graphs/
 *.wav
+*.m4p
+*.mp3
